@@ -17,8 +17,8 @@ The service follows a modular, three-tier architecture separating client communi
        | 1. GenerateImage RPC                               | 8. Return Success Response
        v                                                    |
 +-------------------------------------------------------------------------+
-|                        Your Application: gRPC Server                    |
-|                            (server.py on port 50051)                    |
+|                      gRPC Server (My Application)                       |
+|                        (server.py on port 50051)                        |
 |                                                                         |
 |  +---------------------+                                                |
 |  | 2. Input Validation | (Reject empty, whitespace, or >512 char prompts)
