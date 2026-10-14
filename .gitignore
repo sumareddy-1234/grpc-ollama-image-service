@@ -8,6 +8,7 @@ htmlcov/
 .env
 output/*.png
 output/*.tmp
+!output/.gitkeep
 *.pyc
 *.pyo
 *.pyd
