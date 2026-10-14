@@ -159,3 +159,66 @@ def test_core_req_10_output_dir_recreation(tmp_path):
     assert ok is True
     assert out_dir.is_dir(), "Output directory must be created automatically"
     assert (out_dir / "recreate-test.png").exists()
+
+
+def test_invalid_base64_data(tmp_path):
+    """Verify invalid base64 data returns error and does not create an image file."""
+    from image_storage import save_image
+    ok, err = save_image("this-is-not-valid-base64!@#$", "req-invalid-b64", str(tmp_path))
+    assert ok is False
+    assert "Invalid Base64" in err
+    assert not (tmp_path / "req-invalid-b64.png").exists()
+
+
+def test_corrupt_non_image_data(tmp_path):
+    """Verify arbitrary non-image bytes encoded in base64 fail PIL verification."""
+    from image_storage import save_image
+    import base64
+    fake_bytes_b64 = base64.b64encode(b"this is plain text pretending to be an image").decode("utf-8")
+    ok, err = save_image(fake_bytes_b64, "req-corrupt", str(tmp_path))
+    assert ok is False
+    assert "Invalid image data." in err
+    assert not (tmp_path / "req-corrupt.png").exists()
+
+
+def test_path_traversal_prevention(tmp_path):
+    """Verify path traversal request IDs do not escape output directory."""
+    from image_storage import save_image
+    valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/5+BAQAE/wJ+fpm6AAAAAElFTkSuQmCC"
+    ok, path = save_image(valid_png_b64, "../../evil_escape", str(tmp_path))
+    assert ok is True
+    saved_file = Path(path)
+    # Ensure it's located within tmp_path, not in parent directories
+    assert str(tmp_path.resolve()) in str(saved_file.resolve())
+
+
+def test_temp_file_cleanup_on_failure(tmp_path, monkeypatch):
+    """Verify temporary files are cleaned up if file write / replace fails."""
+    from image_storage import save_image
+    valid_png_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/5+BAQAE/wJ+fpm6AAAAAElFTkSuQmCC"
+
+    def fail_replace(src, dst):
+        raise OSError("Disk full error simulation")
+
+    monkeypatch.setattr(os, "replace", fail_replace)
+    ok, err = save_image(valid_png_b64, "fail-cleanup", str(tmp_path))
+    assert ok is False
+    assert "Failed to save image" in err
+
+    # Verify no stray .tmp files left in the directory
+    tmp_files = list(tmp_path.glob("*.tmp"))
+    assert len(tmp_files) == 0, f"Temporary files were not cleaned up: {tmp_files}"
+
+
+def test_ollama_timeout_maps_to_unavailable():
+    """Verify timeout when communicating with Ollama maps to UNAVAILABLE."""
+    servicer = GeneratorServicer()
+    ctx = DummyContext()
+    req = generation_pb2.GenerateImageRequest(request_id="timeout-test", prompt="test prompt")
+
+    with mock.patch("ollama_client.generate_image_from_prompt", return_value=(False, None, "Ollama service is not available.")):
+        resp = servicer.GenerateImage(req, ctx)
+
+    assert ctx.code == StatusCode.UNAVAILABLE
+    assert ctx.details_msg == "Ollama service is not available."
+

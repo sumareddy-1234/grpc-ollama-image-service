@@ -42,7 +42,7 @@ def test_ollama_timeout(monkeypatch):
     monkeypatch.setattr('requests.post', raise_timeout)
     ok, img, err = generate_image_from_prompt("test")
     assert ok is False
-    assert err == "Ollama request timed out."
+    assert err == "Ollama service is not available."
 
 def test_ollama_malformed_json(monkeypatch):
     mock_response = mock.Mock()

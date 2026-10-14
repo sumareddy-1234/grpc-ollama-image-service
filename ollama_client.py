@@ -30,15 +30,12 @@ def generate_image_from_prompt(prompt: str) -> Tuple[bool, Optional[str], Option
             json=payload,
             timeout=Config.ollama_timeout,
         )
-    except ConnectionError as e:
-        logger.error("Ollama connection error: %s", e)
+    except (ConnectionError, Timeout) as e:
+        logger.error("Ollama connection/timeout error: %s", e)
         return False, None, "Ollama service is not available."
-    except Timeout as e:
-        logger.error("Ollama request timed out: %s", e)
-        return False, None, "Ollama request timed out."
     except RequestException as e:
         logger.error("Ollama request failed: %s", e)
-        return False, None, "Failed to communicate with Ollama service."
+        return False, None, "Ollama service is not available."
 
     # HTTP status handling
     if not response.ok:
