@@ -60,4 +60,4 @@ def test_ollama_missing_images(monkeypatch):
     monkeypatch.setattr('requests.post', lambda *args, **kwargs: mock_response)
     ok, img, err = generate_image_from_prompt("test")
     assert ok is False
-    assert err == "No image data returned by Ollama."
+    assert err == "Ollama response did not contain image data."

@@ -92,7 +92,7 @@ message GenerateImageResponse {
 | Prompt longer than 512 characters | `INVALID_ARGUMENT` (Code 3) | `Prompt cannot exceed 512 characters.` |
 | Ollama service down / connection refused | `UNAVAILABLE` (Code 14) | `Ollama service is not available.` |
 | Ollama returns non-200 HTTP status (4xx/5xx) | `INTERNAL` (Code 13) | `Ollama service returned an error.` |
-| Missing `images` array or text-only model | `INTERNAL` (Code 13) | `No image data returned by Ollama.` |
+| Missing `images` array or text-only model | `INTERNAL` (Code 13) | `Ollama response did not contain image data.` |
 | Malformed JSON from downstream | `INTERNAL` (Code 13) | `Malformed response from Ollama service.` |
 | Request timed out | `INTERNAL` (Code 13) | `Ollama request timed out.` |
 
@@ -110,7 +110,7 @@ message GenerateImageResponse {
   ```
 - **grpcurl** (Optional, for manual CLI testing): Download from [github.com/fullstorydev/grpcurl](https://github.com/fullstorydev/grpcurl/releases)
 
-> **Model Capability Notice**: In standard Ollama distributions, LLaVA is a vision-language assistant; when queried with text-only prompts it produces textual output. If Ollama returns a response without an `images` array, the service safely returns an `INTERNAL` error (`No image data returned by Ollama.`) and never fabricates fake image files. To generate images, configure a model or endpoint that returns Base64 image data in the `images` array via the `OLLAMA_MODEL` and `OLLAMA_BASE_URL` environment variables.
+> **Model Capability Notice**: In standard Ollama distributions, LLaVA is a vision-language assistant; when queried with text-only prompts it produces textual output. If Ollama returns a response without an `images` array, the service safely returns an `INTERNAL` error (`Ollama response did not contain image data.`) and never fabricates fake image files. To generate images, configure a model or endpoint that returns Base64 image data in the `images` array via the `OLLAMA_MODEL` and `OLLAMA_BASE_URL` environment variables.
 
 ---
 

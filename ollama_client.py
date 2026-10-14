@@ -54,7 +54,7 @@ def generate_image_from_prompt(prompt: str) -> Tuple[bool, Optional[str], Option
     images = data.get("images")
     if not images:
         logger.error("Ollama response missing 'images' field or empty.")
-        return False, None, "No image data returned by Ollama."
+        return False, None, "Ollama response did not contain image data."
 
     # Take first image
     first = images[0]
