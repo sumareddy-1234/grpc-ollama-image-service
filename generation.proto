@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package generation;
+
+service Generator {
+  rpc GenerateImage(GenerateImageRequest) returns (GenerateImageResponse);
+}
+
+message GenerateImageRequest {
+  string request_id = 1;
+  string prompt = 2;
+}
+
+message GenerateImageResponse {
+  string request_id = 1;
+  string message = 2;
+  string image_path = 3;
+}
